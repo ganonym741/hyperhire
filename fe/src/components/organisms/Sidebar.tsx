@@ -1,45 +1,48 @@
-'use client';
+import { X, ChevronDown, ChevronRight } from "lucide-react";
+import { useRouter, usePathname } from "next/navigation";
+import IconButton from "../atoms/IconButton";
+import { cn } from "@/lib/utils";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { toggleMenuExpansion } from "@/store/menuSlice";
+import { Menu } from "@/types/menu";
 
-import { useState } from 'react';
-import { X, ChevronDown, ChevronRight } from 'lucide-react';
-import { useRouter, usePathname } from 'next/navigation';
-import Logo from '../atoms/Logo';
-import IconButton from '../atoms/IconButton';
-import { cn } from '@/lib/utils';
-import { TreeNode } from '@/store/menuSlice';
+import CloitLogo from "@assets/cloit.svg";
+import LightFolderIcon from "@assets/light-folder.svg";
+import DarkFolderIcon from "@assets/dark-folder.svg";
+import WhiteSubmenuIcon from "@assets/white-submenu.svg";
+import LightSubmenuIcon from "@assets/light-submenu.svg";
 
 interface SidebarProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-const getIconForNode = (name: string, hasChildren: boolean | undefined) => {
-  // Parent items with children get folder icon
-  if (hasChildren) {
-    return '📁';
+const getIconForNode = (isActive: boolean, depth: number | undefined) => {
+  switch (depth) {
+    case 1:
+      return isActive ? <LightFolderIcon /> : <DarkFolderIcon />;
+    case 2:
+      return isActive ? <WhiteSubmenuIcon /> : <LightSubmenuIcon />;
+    default:
+      return "-";
   }
-
-  // Child items get grid icon
-  return '⊞';
 };
 
-const SidebarMenuItem = ({ 
-  node, 
+const SidebarMenuItem = ({
+  node,
   depth = 0,
-  expandedNodes,
   onToggleExpand,
   onNavigate,
-  currentPath
-}: { 
-  node: TreeNode; 
+  currentPath,
+}: {
+  node: Menu;
   depth?: number;
-  expandedNodes: Set<string>;
   onToggleExpand: (id: string) => void;
-  onNavigate: (node: TreeNode) => void;
+  onNavigate: (node: Menu) => void;
   currentPath: string;
 }) => {
   const hasChildren = node.children && node.children.length > 0;
-  const isExpanded = expandedNodes.has(node.id);
+  const isExpanded = node.menuExpanded;
 
   const handleClick = () => {
     if (hasChildren) {
@@ -49,32 +52,49 @@ const SidebarMenuItem = ({
     }
   };
 
-  const isParent = depth === 0;
-  const isChild = depth === 1;
-  
+  const isRoot = depth === 1;
+  const isChild = depth > 1;
+
   // Generate URL path from node name
-  const nodePath = node.name === 'Menus' 
-    ? '/menus' 
-    : `/${node.name.toLowerCase().replace(/\s+/g, '-').replace(/[&]/g, 'and')}`;
+  const nodePath =
+    node.name === "Menu"
+      ? "/menus"
+      : `/menus/${node.name
+          .toLowerCase()
+          .replace(/\s+/g, "-")
+          .replace(/[&]/g, "and")}`;
   const isActive = currentPath === nodePath;
 
   return (
-    <div>
+    <div
+      className={
+        isRoot && node.menuExpanded
+          ? "bg-sidebar-hover text-sidebar-foreground rounded-[20px]"
+          : ""
+      }
+    >
       <button
         onClick={handleClick}
         className={cn(
-          'w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all text-left',
+          "w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all text-left",
           // Parent styling
-          isParent && !isExpanded && 'text-sidebar-foreground/70 hover:bg-sidebar-hover/40',
-          isParent && isExpanded && 'bg-sidebar-hover text-sidebar-foreground',
+          isRoot &&
+            !isExpanded &&
+            "text-sidebar-foreground/70 hover:bg-sidebar-hover/40",
           // Child styling
-          isChild && isActive && 'bg-sidebar-accent text-sidebar-accent-foreground font-medium',
-          isChild && !isActive && 'text-sidebar-foreground/60 hover:bg-sidebar-hover/30'
+          isChild &&
+            isActive &&
+            "bg-sidebar-accent text-sidebar-accent-foreground font-medium",
+          isChild &&
+            !isActive &&
+            "text-sidebar-foreground/60 hover:bg-sidebar-hover/30",
         )}
       >
-        <span className="text-base flex-shrink-0">{getIconForNode(node.name, hasChildren)}</span>
+        <span className="text-base flex-shrink-0">
+          {getIconForNode(!!node.menuExpanded, node.depth)}
+        </span>
         <span className="text-sm flex-1">{node.name}</span>
-        {hasChildren && isParent && (
+        {hasChildren && (
           <span className="text-xs text-sidebar-foreground/70">
             {isExpanded ? (
               <ChevronDown className="w-4 h-4" />
@@ -86,14 +106,13 @@ const SidebarMenuItem = ({
       </button>
 
       {/* Render children directly below parent (no indentation) */}
-      {hasChildren && isExpanded && isParent && (
+      {hasChildren && isExpanded && (
         <div className="mt-1 space-y-1">
           {node.children?.map((child) => (
-            <SidebarMenuItem 
-              key={child.id} 
-              node={child} 
-              depth={depth + 1}
-              expandedNodes={expandedNodes}
+            <SidebarMenuItem
+              key={child.id}
+              node={child}
+              depth={child.depth}
               onToggleExpand={onToggleExpand}
               onNavigate={onNavigate}
               currentPath={currentPath}
@@ -106,69 +125,23 @@ const SidebarMenuItem = ({
 };
 
 const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
-  // Sample tree data since Redux is not available
-  const treeData: TreeNode[] = [
-    {
-      id: '1',
-      name: 'Menus',
-      nameKr: '메뉴',
-      depth: 0,
-      parentId: null,
-      isActive: true,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      children: [
-        {
-          id: '2',
-          name: 'User Management',
-          nameKr: '사용자 관리',
-          depth: 1,
-          parentId: '1',
-          isActive: true,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          children: []
-        },
-        {
-          id: '3',
-          name: 'Role Management',
-          nameKr: '역할 관리',
-          depth: 1,
-          parentId: '1',
-          isActive: true,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          children: []
-        }
-      ]
-    }
-  ];
+  const dispatch = useAppDispatch();
+  const { tree } = useAppSelector((state) => state.menu);
   const router = useRouter();
   const pathname = usePathname();
-  
-  // Local state for sidebar expansion (independent from tree view)
-  const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set(['systems', 'users-groups']));
-  
-  // Get "System Management" node and its children
-  const systemManagementNode = treeData[0]?.children?.[0];
-  const menuItems = systemManagementNode?.children || [];
 
   const handleToggleExpand = (id: string) => {
-    setExpandedNodes(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(id)) {
-        newSet.delete(id);
-      } else {
-        newSet.add(id);
-      }
-      return newSet;
-    });
+    dispatch(toggleMenuExpansion(id));
   };
 
-  const handleNavigate = (node: TreeNode) => {
-    const path = node.name === 'Menus'
-      ? '/menu'
-      : `/${node.name.toLowerCase().replace(/\s+/g, '-').replace(/[&]/g, 'and')}`;
+  const handleNavigate = (node: Menu) => {
+    const path =
+      node.name === "Menus"
+        ? "/menus"
+        : `/menus/${node.name
+            .toLowerCase()
+            .replace(/\s+/g, "-")
+            .replace(/[&]/g, "and")}`;
     router.push(path);
     // Close sidebar on mobile after navigation
     if (window.innerWidth < 1024) {
@@ -189,32 +162,33 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
       {/* Sidebar */}
       <aside
         className={cn(
-          'fixed lg:sticky top-0 left-0 h-screen bg-sidebar border-r border-sidebar-border z-50 transition-transform duration-300 flex flex-col',
-          'w-[240px]',
-          isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+          "fixed lg:sticky top-0 left-0 h-screen z-50 transition-transform duration-300",
+          "w-full lg:w-1/5 min-w-[288px] p-[24px]",
+          isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0",
         )}
       >
-        {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-sidebar-border">
-          <Logo />
-          <IconButton onClick={onClose} className="lg:hidden">
-            <X className="w-5 h-5" />
-          </IconButton>
-        </div>
+        <div className="h-full w-full border-r border-sidebar-border bg-sidebar rounded-[24px] flex flex-col">
+          <div className="flex items-center justify-between p-8 border-b border-sidebar-border">
+            <CloitLogo />
+            <IconButton onClick={onClose} className="lg:hidden">
+              <X className="w-5 h-7" />
+            </IconButton>
+          </div>
 
-        {/* Menu Items */}
-        <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
-          {menuItems.map((item: TreeNode) => (
-            <SidebarMenuItem 
-              key={item.id} 
-              node={item}
-              expandedNodes={expandedNodes}
-              onToggleExpand={handleToggleExpand}
-              onNavigate={handleNavigate}
-              currentPath={pathname}
-            />
-          ))}
-        </nav>
+          {/* Menu Items */}
+          <nav className="flex-1 p-4 gap-4 space-y-3 overflow-y-auto">
+            {tree[0]?.children?.map((item: Menu) => (
+              <SidebarMenuItem
+                key={item.id}
+                node={item}
+                depth={item.depth}
+                onToggleExpand={handleToggleExpand}
+                onNavigate={handleNavigate}
+                currentPath={pathname}
+              />
+            ))}
+          </nav>
+        </div>
       </aside>
     </>
   );

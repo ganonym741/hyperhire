@@ -1,4 +1,4 @@
-import { Folder } from 'lucide-react';
+import { Folder } from "lucide-react";
 
 interface BreadcrumbProps {
   items: string[];
@@ -10,7 +10,7 @@ const Breadcrumb = ({ items }: BreadcrumbProps) => {
       <Folder className="w-4 h-4" />
       {items.map((item, index) => (
         <span key={index} className="flex items-center gap-2">
-          {index > 0 && <span>/</span>}
+          <span className="px-1">/</span>
           <span>{item}</span>
         </span>
       ))}

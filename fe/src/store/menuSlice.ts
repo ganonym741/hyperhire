@@ -1,123 +1,133 @@
-import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { Menu, CreateMenuDto, UpdateMenuDto, MenuState } from '@/types/menu';
-import { menuApi } from '@/service/api';
-
-export type TreeNode = Menu;
+import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
+import { Menu, CreateMenuDto, UpdateMenuDto, MenuState } from "@/types/menu";
+import { menuApi } from "@/service/api";
+import {
+  recurseToEditExpanding,
+  recurseToEditMenuExpanding,
+  recursiveCollapsingNodes,
+  recursiveExpandingNodes,
+} from "@/lib/menu-tree";
 
 const initialState: MenuState = {
-  menus: [],
   tree: [],
-  selectedMenu: null,
-  selectedNode: null,
+  selectedMenu: undefined,
+  selectedNode: undefined,
+  expandAllActive: true,
+  collapseAllActive: false,
   loading: false,
-  error: null,
-  expandedMenuIds: new Set<string>(),
+  error: undefined,
 };
 
 // Async thunks
 export const fetchMenuTree = createAsyncThunk(
-  'menu',
+  "menu",
   async (_, { rejectWithValue }) => {
     try {
       const data = await menuApi.getTree();
       return data;
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : 'Failed to fetch menu tree';
+      const message =
+        error instanceof Error ? error.message : "Failed to fetch menu tree";
       return rejectWithValue(message);
     }
-  }
+  },
 );
 
 export const fetchMenuById = createAsyncThunk(
-  'menu/fetchById',
+  "menu/fetchById",
   async (id: string, { rejectWithValue }) => {
     try {
       const data = await menuApi.getById(id);
       return data;
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : 'Failed to fetch menu';
+      const message =
+        error instanceof Error ? error.message : "Failed to fetch menu";
       return rejectWithValue(message);
     }
-  }
+  },
 );
 
 export const createMenu = createAsyncThunk(
-  'menu/create',
+  "menu/create",
   async (menuData: CreateMenuDto, { rejectWithValue }) => {
     try {
       const data = await menuApi.create(menuData);
       return data;
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : 'Failed to create menu';
+      const message =
+        error instanceof Error ? error.message : "Failed to create menu";
       return rejectWithValue(message);
     }
-  }
+  },
 );
 
 export const updateMenu = createAsyncThunk(
-  'menu/update',
-  async ({ id, data }: { id: string; data: UpdateMenuDto }, { rejectWithValue }) => {
+  "menu/update",
+  async (
+    { id, data }: { id: string; data: UpdateMenuDto },
+    { rejectWithValue },
+  ) => {
     try {
       const result = await menuApi.update(id, data);
       return result;
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : 'Failed to update menu';
+      const message =
+        error instanceof Error ? error.message : "Failed to update menu";
       return rejectWithValue(message);
     }
-  }
+  },
 );
 
 export const deleteMenu = createAsyncThunk(
-  'menu/delete',
+  "menu/delete",
   async (id: string, { rejectWithValue }) => {
     try {
       await menuApi.delete(id);
       return id;
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : 'Failed to delete menu';
+      const message =
+        error instanceof Error ? error.message : "Failed to delete menu";
       return rejectWithValue(message);
     }
-  }
+  },
 );
 
 const menuSlice = createSlice({
-  name: 'menu',
+  name: "menu",
   initialState,
   reducers: {
-    setSelectedMenu: (state, action: PayloadAction<string | null>) => {
+    setSelectedMenu: (state, action: PayloadAction<string | undefined>) => {
       state.selectedMenu = action.payload;
     },
-    setSelectedNode: (state, action: PayloadAction<Menu | null>) => {
+    setSelectedNode: (state, action: PayloadAction<Menu | undefined>) => {
       state.selectedNode = action.payload;
     },
-    toggleMenuExpanded: (state, action: PayloadAction<string>) => {
+    toggleMenuExpansion: (state, action: PayloadAction<string>) => {
       const menuId = action.payload;
-      const newSet = new Set(state.expandedMenuIds);
-      if (newSet.has(menuId)) {
-        newSet.delete(menuId);
-      } else {
-        newSet.add(menuId);
-      }
-      state.expandedMenuIds = newSet;
+
+      state.tree = recurseToEditMenuExpanding(menuId, state.tree);
+    },
+    toggleNodeExpansion: (state, action: PayloadAction<string>) => {
+      const menuId = action.payload;
+
+      state.expandAllActive = false;
+      state.collapseAllActive = false;
+      state.tree = recurseToEditExpanding(menuId, state.tree);
     },
     expandAll: (state) => {
-      const getAllMenuIds = (menus: Menu[]): string[] => {
-        let ids: string[] = [];
-        menus.forEach((menu) => {
-          ids.push(menu.id);
-          if (menu.children && menu.children.length > 0) {
-            ids = ids.concat(getAllMenuIds(menu.children));
-          }
-        });
-        return ids;
-      };
-      state.expandedMenuIds = new Set(getAllMenuIds(state.tree));
+      state.expandAllActive = true;
+      state.collapseAllActive = false;
+
+      state.tree = recursiveExpandingNodes(state.tree);
     },
     collapseAll: (state) => {
-      state.expandedMenuIds = new Set<string>();
+      state.collapseAllActive = true;
+      state.expandAllActive = false;
+
+      state.tree = recursiveCollapsingNodes(state.tree);
     },
     clearError: (state) => {
-      state.error = null;
+      state.error = undefined;
     },
   },
   extraReducers: (builder) => {
@@ -125,11 +135,12 @@ const menuSlice = createSlice({
     builder
       .addCase(fetchMenuTree.pending, (state) => {
         state.loading = true;
-        state.error = null;
+        state.error = undefined;
       })
       .addCase(fetchMenuTree.fulfilled, (state, action) => {
         state.loading = false;
-        state.tree = action.payload;
+        state.expandAllActive = true;
+        state.tree = recursiveExpandingNodes(action.payload);
       })
       .addCase(fetchMenuTree.rejected, (state, action) => {
         state.loading = false;
@@ -140,7 +151,7 @@ const menuSlice = createSlice({
     builder
       .addCase(fetchMenuById.pending, (state) => {
         state.loading = true;
-        state.error = null;
+        state.error = undefined;
       })
       .addCase(fetchMenuById.fulfilled, (state, action) => {
         state.loading = false;
@@ -155,11 +166,10 @@ const menuSlice = createSlice({
     builder
       .addCase(createMenu.pending, (state) => {
         state.loading = true;
-        state.error = null;
+        state.error = undefined;
       })
       .addCase(createMenu.fulfilled, (state, action) => {
         state.loading = false;
-        state.menus.push(action.payload);
       })
       .addCase(createMenu.rejected, (state, action) => {
         state.loading = false;
@@ -170,13 +180,13 @@ const menuSlice = createSlice({
     builder
       .addCase(updateMenu.pending, (state) => {
         state.loading = true;
-        state.error = null;
+        state.error = undefined;
       })
       .addCase(updateMenu.fulfilled, (state, action) => {
         state.loading = false;
-        const index = state.menus.findIndex((m) => m.id === action.payload.id);
+        const index = state.tree.findIndex((m) => m.id === action.payload.id);
         if (index !== -1) {
-          state.menus[index] = action.payload;
+          state.tree[index] = action.payload;
         }
         if (state.selectedNode?.id === action.payload.id) {
           state.selectedNode = action.payload;
@@ -191,13 +201,13 @@ const menuSlice = createSlice({
     builder
       .addCase(deleteMenu.pending, (state) => {
         state.loading = true;
-        state.error = null;
+        state.error = undefined;
       })
       .addCase(deleteMenu.fulfilled, (state, action) => {
         state.loading = false;
-        state.menus = state.menus.filter((m) => m.id !== action.payload);
+        state.tree = state.tree.filter((m) => m.id !== action.payload);
         if (state.selectedNode?.id === action.payload) {
-          state.selectedNode = null;
+          state.selectedNode = undefined;
         }
       })
       .addCase(deleteMenu.rejected, (state, action) => {
@@ -210,7 +220,8 @@ const menuSlice = createSlice({
 export const {
   setSelectedMenu,
   setSelectedNode,
-  toggleMenuExpanded,
+  toggleMenuExpansion,
+  toggleNodeExpansion,
   expandAll,
   collapseAll,
   clearError,

@@ -1,15 +1,16 @@
 export interface Menu {
   id: string;
   name: string;
-  nameKr: string;
+  nameKr?: string;
   depth: number;
   isActive: boolean;
-  parentId: string | null;
-  parent?: Menu | null;
+  parentId?: string;
+  parent?: Menu;
   children?: Menu[];
-  createdAt: string;
-  updatedAt: string;
+  createdAt?: string;
+  updatedAt?: string;
   expanded?: boolean;
+  menuExpanded?: boolean;
 }
 
 export interface CreateMenuDto {
@@ -29,11 +30,11 @@ export interface UpdateMenuDto {
 }
 
 export interface MenuState {
-  menus: Menu[];
   tree: Menu[];
-  selectedMenu: string | null;
-  selectedNode: Menu | null;
+  selectedMenu?: string;
+  selectedNode?: Menu;
+  expandAllActive: boolean;
+  collapseAllActive: boolean;
   loading: boolean;
-  error: string | null;
-  expandedMenuIds: Set<string>;
+  error?: string;
 }

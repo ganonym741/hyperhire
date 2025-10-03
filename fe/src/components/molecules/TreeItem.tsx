@@ -1,28 +1,33 @@
-import { ChevronDown, ChevronRight, Plus } from 'lucide-react';
-import { TreeNode } from '@/store/menuSlice';
-import { cn } from '@/lib/utils';
+import { ChevronDown, ChevronRight, Plus } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Menu } from "@/types/menu";
 
 interface TreeItemProps {
-  node: TreeNode;
+  node: Menu;
   onToggle: (id: string) => void;
-  onSelect: (node: TreeNode) => void;
-  onAdd?: (node: TreeNode) => void;
+  onSelect: (node: Menu) => void;
+  onAdd?: (node: Menu) => void;
   selectedId?: string;
 }
 
-const TreeItem = ({ node, onToggle, onSelect, onAdd, selectedId }: TreeItemProps) => {
+const TreeItem = ({
+  node,
+  onToggle,
+  onSelect,
+  onAdd,
+  selectedId,
+}: TreeItemProps) => {
   const hasChildren = node.children && node.children.length > 0;
-  const indentLevel = node.depth * 20;
+  const indentLevel = node.depth * 30;
 
   return (
     <div>
       <div
         className={cn(
-          'flex items-center gap-1 py-1.5 px-2 hover:bg-muted/50 cursor-pointer rounded group',
-          selectedId === node.id && 'bg-muted'
+          "flex items-center justify-start space-x-2 gap-1 py-1.5 px-2 hover:bg-muted/50 rounded group",
+          selectedId === node.id && "bg-muted",
         )}
         style={{ paddingLeft: `${indentLevel + 8}px` }}
-        onClick={() => onSelect(node)}
       >
         {hasChildren ? (
           <button
@@ -41,14 +46,19 @@ const TreeItem = ({ node, onToggle, onSelect, onAdd, selectedId }: TreeItemProps
         ) : (
           <div className="w-5" />
         )}
-        <span className="text-sm text-foreground flex-1">{node.name}</span>
+        <span
+          className="text-sm text-foreground mr-4 cursor-pointer "
+          onClick={() => onSelect(node)}
+        >
+          {node.name}
+        </span>
         {onAdd && (
           <button
             onClick={(e) => {
               e.stopPropagation();
               onAdd(node);
             }}
-            className="opacity-0 group-hover:opacity-100 p-1 hover:bg-primary rounded transition-opacity"
+            className="opacity-0 group-hover:opacity-100 p-1 group-hover:bg-primary rounded-full transition-opacity cursor-pointer "
           >
             <Plus className="w-4 h-4 text-primary-foreground" />
           </button>

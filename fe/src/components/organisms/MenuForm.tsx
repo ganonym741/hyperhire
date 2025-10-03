@@ -1,47 +1,78 @@
-'use client';
+"use client";
 
-import { Button } from '../atoms/Button';
-import { Input } from '../atoms/Input';
-import { Label } from '../atoms/Label';
-import { useEffect, useState } from 'react';
+import { Button } from "../atoms/Button";
+import { Input } from "../atoms/Input";
+import { Label } from "../atoms/Label";
+import React, { useRef, useState } from "react";
+import { Menu } from "@/types/menu";
 
 interface MenuFormProps {
   formRef?: React.RefObject<HTMLDivElement | null>;
+  handleUpdate?: (data: Menu) => void;
+  handleCreate?: (data: Menu) => void;
+  data?: Menu;
 }
 
-const MenuForm = ({ formRef }: MenuFormProps) => {
-  const [formData, setFormData] = useState({
-    menuId: '',
-    depth: '',
-    parentData: '',
-    name: '',
-  });
+const MenuForm = ({
+  formRef,
+  handleCreate,
+  handleUpdate,
+  data,
+}: MenuFormProps) => {
+  const formElementRef = useRef<HTMLFormElement>(null);
+  const [nameValue, setNameValue] = useState<string>("");
 
-  // For now, use empty form data since Redux is not available
-  useEffect(() => {
-    // Reset form when component mounts
-    setFormData({
-      menuId: '',
-      depth: '',
-      parentData: '',
-      name: '',
-    });
-  }, []);
+  const isCreate = !!handleCreate;
 
-  const handleSave = () => {
-    console.log('Saving form data:', formData);
+  React.useEffect(() => {
+    if (!isCreate && data?.name) {
+      setNameValue(data.name);
+    } else if (isCreate) {
+      setNameValue("");
+    }
+  }, [data?.name, isCreate]);
+
+  const handleSubmit = () => {
+    if (!formElementRef.current) return;
+
+    const formData = new FormData(formElementRef.current);
+    const name = formData.get("name") as string;
+
+    const submitData: Menu = {
+      id: isCreate ? "" : data?.id || "",
+      name: name || "",
+      depth: isCreate ? (data?.depth ?? 0) + 1 : data?.depth || 0,
+      isActive: data?.isActive ?? true,
+      parentId: isCreate ? data?.id : data?.parentId,
+      parent: isCreate ? data : data?.parent,
+      children: data?.children,
+      createdAt: data?.createdAt,
+      updatedAt: data?.updatedAt,
+      expanded: data?.expanded,
+      menuExpanded: data?.menuExpanded,
+    };
+
+    if (isCreate && handleCreate) {
+      handleCreate(submitData);
+    } else if (handleUpdate) {
+      handleUpdate(submitData);
+    }
   };
 
   return (
-    <div ref={formRef} className="bg-card border border-border rounded-lg p-6 space-y-4">
+    <form
+      ref={formElementRef}
+      className="bg-card border border-border w-full lg:max-w-[552px] rounded-lg p-6 space-y-4"
+    >
       <div className="space-y-2">
-        <Label htmlFor="menuId" className="text-sm font-medium">
+        <Label htmlFor="id" className="text-sm font-medium">
           Menu ID
         </Label>
         <Input
-          id="menuId"
-          value={formData.menuId}
-          onChange={(e) => setFormData({ ...formData, menuId: e.target.value })}
+          id="id"
+          name="id"
+          disabled={true}
+          defaultValue={isCreate ? "-" : data?.id}
           className="bg-muted border-border"
           readOnly
         />
@@ -53,9 +84,10 @@ const MenuForm = ({ formRef }: MenuFormProps) => {
         </Label>
         <Input
           id="depth"
-          value={formData.depth}
-          onChange={(e) => setFormData({ ...formData, depth: e.target.value })}
-          className="bg-muted border-border"
+          name="depth"
+          disabled={!data || isCreate}
+          defaultValue={isCreate ? (data?.depth ?? 0) + 1 : data?.depth}
+          className="bg-muted border-border max-w-[252px]"
           readOnly
         />
       </div>
@@ -66,9 +98,10 @@ const MenuForm = ({ formRef }: MenuFormProps) => {
         </Label>
         <Input
           id="parentData"
-          value={formData.parentData}
-          onChange={(e) => setFormData({ ...formData, parentData: e.target.value })}
-          className="bg-muted border-border"
+          name="parentData"
+          disabled={true}
+          defaultValue={isCreate ? data?.name : data?.parent?.name}
+          className="bg-muted border-border max-w-[252px]"
           readOnly
         />
       </div>
@@ -79,19 +112,22 @@ const MenuForm = ({ formRef }: MenuFormProps) => {
         </Label>
         <Input
           id="name"
-          value={formData.name}
-          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-          className="bg-background border-border"
+          name="name"
+          disabled={!data}
+          value={nameValue}
+          onChange={(e) => setNameValue(e.target.value)}
+          className="bg-muted border-border max-w-[252px]"
         />
       </div>
 
       <Button
-        onClick={handleSave}
+        type="button"
+        onClick={handleSubmit}
         className="w-full bg-primary text-primary-foreground hover:bg-primary/90 h-12 rounded-full text-base font-medium"
       >
-        Save
+        {isCreate ? "Create" : "Save"}
       </Button>
-    </div>
+    </form>
   );
 };
 

@@ -1,88 +1,42 @@
-'use client';
-
-import { useState } from 'react';
-import TreeItem from '../molecules/TreeItem';
-import { Button } from '../atoms/Button';
-import { TreeNode } from '@/store/menuSlice';
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import {
+  toggleNodeExpansion,
+  expandAll,
+  collapseAll,
+  setSelectedNode,
+} from "@/store/menuSlice";
+import TreeItem from "../molecules/TreeItem";
+import { Button } from "@/components/atoms/Button";
+import { cn } from "@/lib/utils";
+import { Menu } from "@/types/menu";
+import { Dispatch, SetStateAction } from "react";
 
 interface TreeViewProps {
-  onAdd?: (node: TreeNode) => void;
+  onAdd?: (node: Menu) => void;
+  setAction: Dispatch<SetStateAction<"delete" | "create" | "update" | "none">>;
 }
 
-const TreeView = ({ onAdd }: TreeViewProps) => {
-  // Sample tree data since Redux is not available
-  const treeData: TreeNode[] = [
-    {
-      id: '1',
-      name: 'Menus',
-      nameKr: '메뉴',
-      depth: 0,
-      parentId: null,
-      isActive: true,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      children: [
-        {
-          id: '2',
-          name: 'User Management',
-          nameKr: '사용자 관리',
-          depth: 1,
-          parentId: '1',
-          isActive: true,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          children: []
-        },
-        {
-          id: '3',
-          name: 'Role Management',
-          nameKr: '역할 관리',
-          depth: 1,
-          parentId: '1',
-          isActive: true,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          children: []
-        }
-      ]
-    }
-  ];
-
-  const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set());
-  const [selectedNode, setSelectedNode] = useState<TreeNode | null>(null);
+const TreeView = ({ onAdd, setAction }: TreeViewProps) => {
+  const dispatch = useAppDispatch();
+  const { tree, selectedNode, expandAllActive, collapseAllActive } =
+    useAppSelector((state) => state.menu);
 
   const handleToggle = (id: string) => {
-    setExpandedNodes(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(id)) {
-        newSet.delete(id);
-      } else {
-        newSet.add(id);
-      }
-      return newSet;
-    });
+    dispatch(toggleNodeExpansion(id));
   };
 
-  const handleSelect = (node: TreeNode) => {
-    setSelectedNode(node);
+  const handleSelect = (node: Menu) => {
+    setAction("update");
+    dispatch(setSelectedNode(node));
+    dispatch(toggleNodeExpansion(node.id));
   };
 
   const handleExpandAll = () => {
-    const getAllMenuIds = (menus: TreeNode[]): string[] => {
-      let ids: string[] = [];
-      menus.forEach((menu) => {
-        ids.push(menu.id);
-        if (menu.children && menu.children.length > 0) {
-          ids = ids.concat(getAllMenuIds(menu.children));
-        }
-      });
-      return ids;
-    };
-    setExpandedNodes(new Set(getAllMenuIds(treeData)));
+    dispatch(expandAll());
   };
 
   const handleCollapseAll = () => {
-    setExpandedNodes(new Set());
+    dispatch(collapseAll());
   };
 
   return (
@@ -90,24 +44,35 @@ const TreeView = ({ onAdd }: TreeViewProps) => {
       <div className="flex gap-2">
         <Button
           onClick={handleExpandAll}
-          className="bg-foreground text-background hover:bg-foreground/90"
+          variant="outline"
+          className={cn(
+            "border-border rounded-full py-3 px-8",
+            expandAllActive
+              ? "bg-foreground text-background hover:text-background hover:bg-foreground/90"
+              : "hover:bg-muted/60",
+          )}
         >
           Expand All
         </Button>
         <Button
           onClick={handleCollapseAll}
           variant="outline"
-          className="border-border hover:bg-muted"
+          className={cn(
+            "border-border rounded-full py-3 px-8",
+            collapseAllActive
+              ? "bg-foreground text-background hover:text-background hover:bg-foreground/90"
+              : "hover:bg-muted/60",
+          )}
         >
           Collapse All
         </Button>
       </div>
 
-      <div className="border border-border rounded-lg bg-card p-2">
-        {treeData.map((node) => (
+      <div className="border border-border w-full lg:max-w-[552px] rounded-lg bg-card p-2">
+        {tree.map((node) => (
           <TreeItem
             key={node.id}
-            node={{ ...node, expanded: expandedNodes.has(node.id) }}
+            node={node}
             onToggle={handleToggle}
             onSelect={handleSelect}
             onAdd={onAdd}

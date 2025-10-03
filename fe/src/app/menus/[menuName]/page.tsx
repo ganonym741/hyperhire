@@ -1,18 +1,19 @@
-'use client';
+"use client";
 
-import { useParams } from 'next/navigation';
-import Breadcrumb from '@/components/molecules/Breadcrumb';
+import { useParams } from "next/navigation";
+import Breadcrumb from "@/components/molecules/Breadcrumb";
 
 const WelcomePage = () => {
   const params = useParams();
   const menuName = params.menuName as string;
 
   // Convert URL-friendly name back to readable name
-  const displayName = menuName?.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) || '';
+  const displayName =
+    menuName?.replace(/-/g, " ").replace(/\b\w/g, (l) => l.toUpperCase()) || "";
 
   return (
     <div className="space-y-6">
-      <Breadcrumb items={['System Management', displayName]} />
+      <Breadcrumb items={["System Management", displayName]} />
 
       <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4">
         <h1 className="text-4xl font-bold text-foreground">
