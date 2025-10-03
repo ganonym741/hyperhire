@@ -1,0 +1,41 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+// generator docs {
+//     provider = "node node_modules/prisma-docs-generator"
+// }
+
+//Please be careful, cause below code will generate new entities at src/@entities folder.
+//This folder contain validation, it will removed when you run the generator.
+//Consider to only change of what you need only.
+// generator prismaClassGenerator {
+//     provider = "npx prisma-class-generator"
+//     dryRun   = "false"
+//     output   = "../src/@entities"
+// }
+
+model Menu {
+    id       String  @id @default(uuid())
+    name     String
+    nameKr   String?
+    depth    Int     @default(0)
+    parentId String? @map("parent_id")
+    isActive Boolean @default(false)
+
+    parent    Menu?    @relation("MenuHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
+    children  Menu[]   @relation("MenuHierarchy")
+    createdAt DateTime @default(now()) @map("created_at")
+    updatedAt DateTime @updatedAt @map("updated_at")
+
+    @@index([parentId])
+    @@map("menus")
+}
