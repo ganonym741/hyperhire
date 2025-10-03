@@ -1,0 +1,8 @@
+{
+  "framework": null,
+  "buildCommand": "cd fe && npm run build",
+  "outputDirectory": "fe/out",
+  "installCommand": "cd fe && npm install",
+  "devCommand": "cd fe && npm run dev",
+  "rootDirectory": "fe"
+}

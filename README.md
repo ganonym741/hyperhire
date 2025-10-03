@@ -1,309 +1,260 @@
-# Menu Management System
+# Hyperhire Test Project
 
-A full-stack hierarchical menu management system with a modern, responsive UI and robust backend architecture.
+A full-stack web application for menu management, featuring a modern frontend built with Next.js and a robust backend powered by NestJS with Prisma ORM.
 
-![Menu Management System](https://img.shields.io/badge/Status-Production%20Ready-green)
-![License](https://img.shields.io/badge/License-MIT-blue)
+## Project Overview
 
-## 🌟 Features
+This project consists of two main components:
 
-### Frontend
-- ✅ **Hierarchical Tree Menu** with unlimited depth
-- ✅ **Expand/Collapse** functionality with Expand All/Collapse All
-- ✅ **CRUD Operations** (Create, Read, Update, Delete)
-- ✅ **Responsive Design** (Desktop, Tablet, Mobile)
-- ✅ **Modern UI** with TailwindCSS
-- ✅ **State Management** with Redux Toolkit
-- ✅ **Atomic Design** architecture
-- ✅ **TypeScript** for type safety
+- **Frontend (fe)**: A Next.js application providing an intuitive user interface for menu management
+- **Backend (be)**: A NestJS API server handling business logic and database operations
 
-### Backend
-- ✅ **RESTful API** with NestJS
-- ✅ **Domain-Driven Design** (DDD) architecture
-- ✅ **PostgreSQL** database with Prisma ORM
-- ✅ **Comprehensive Testing** (Unit & Integration tests)
-- ✅ **Input Validation** with class-validator
-- ✅ **API Documentation** ready
-- ✅ **CORS** enabled for frontend integration
-
-## 📸 Screenshot Reference
-
-The application is built to match the provided design with:
-- Dark sidebar navigation
-- Tree menu with expand/collapse icons
-- Split-view layout (tree on left, details on right)
-- Form for creating/editing menus
-- Menu details display with ID, depth, parent, and name
-
-## 🏗️ Architecture
+## Architecture
 
 ### Frontend Architecture
-```
-Next.js 14 (App Router)
-├── Atomic Design Components
-│   ├── Atoms (Button, Input, Icon)
-│   ├── Molecules (TreeMenuItem, MenuForm)
-│   └── Organisms (TreeMenu, Sidebar)
-├── Redux Toolkit (State Management)
-├── TailwindCSS (Styling)
-└── Axios (API Client)
-```
+
+- **Framework**: Next.js 14 with App Router
+- **Language**: TypeScript
+- **UI Framework**: React 19.1.0
+- **Styling**: Tailwind CSS with shadcn/ui components
+- **State Management**: Redux Toolkit
+- **HTTP Client**: Axios
+- **Component Structure**:
+  - `atoms/`: Basic UI components (Button, Input, etc.)
+  - `molecules/`: Composite components (Breadcrumb, Select, etc.)
+  - `organisms/`: Complex components (MenuForm, Sidebar, TreeView)
+  - `templates/`: Layout components (MainLayout)
+- **Key Features**:
+  - Responsive menu tree view
+  - CRUD operations for menu items
+  - Toast notifications
+  - Mobile-responsive design
 
 ### Backend Architecture
-```
-NestJS Framework
-├── Domain Layer
-│   ├── Entities (Business logic)
-│   └── Repository Interfaces
-├── Application Layer
-│   ├── Services (Use cases)
-│   └── DTOs (Data transfer)
-├── Infrastructure Layer
-│   ├── Prisma (Database)
-│   └── Repository Implementations
-└── Presentation Layer
-    └── Controllers (API endpoints)
-```
 
-## 🚀 Quick Start
+- **Framework**: NestJS 10.0.0
+- **Language**: TypeScript
+- **Database**: PostgreSQL with Prisma ORM
+- **API Documentation**: Swagger/OpenAPI
+- **Validation**: class-validator and class-transformer
+- **Project Structure**:
+  - `@core/`: Core modules (config, services, utils)
+  - `@entities/`: Database entities
+  - `menu/`: Menu management module
+- **Key Features**:
+  - RESTful API for menu operations
+  - Database seeding and migrations
+  - Standardized response middleware
+  - Exception handling
+
+### Database Schema
+
+- **Menu Entity**: Hierarchical menu structure with parent-child relationships
+- **Fields**: id, name, depth, parentId, createdAt, updatedAt
+
+## Tech Stack
+
+### Frontend
+
+- Next.js 15.5.4
+- React 19.1.0
+- TypeScript 5.9.3
+- Tailwind CSS 3.4.1
+- Redux Toolkit 2.9.0
+- Axios 1.12.2
+- Lucide React (icons)
+- ESLint 9.0.0
+- Prettier 3.6.2
+
+### Backend
+
+- NestJS 10.0.0
+- TypeScript 5.1.3
+- Prisma 6.16.3
+- PostgreSQL 8.16.3
+- Swagger 11.2.0
+- class-validator 0.14.2
+- class-transformer 0.5.1
+- Jest 29.5.0
+- ESLint 9.0.0
+- Prettier 3.0.0
+
+## Getting Started
 
 ### Prerequisites
-- Node.js 18+ 
-- PostgreSQL 14+
+
+- Node.js (v18 or higher)
 - npm or yarn
+- PostgreSQL database
+- Docker (optional, for containerized setup)
 
-### Installation
+### Backend Setup
 
-1. **Clone the repository**
-```bash
-git clone <repository-url>
-cd hyperhire-test
-```
+1. Navigate to the backend directory:
 
-2. **Setup Backend**
-```bash
-cd backend
+   ```bash
+   cd be
+   ```
 
-# Install dependencies
-npm install
+2. Install dependencies:
 
-# Setup environment variables
-cp .env.example .env
-# Edit .env with your database credentials
+   ```bash
+   npm install
+   ```
 
-# Generate Prisma client
-npm run prisma:generate
+3. Set up environment variables:
 
-# Run migrations
-npm run prisma:migrate
+   - Copy `.env.example` to `.env`
+   - Configure your PostgreSQL connection string
 
-# Seed database
-npm run prisma:seed
+4. Set up the database:
 
-# Start backend server
-npm run start:dev
-```
+   ```bash
+   # Pull database schema (if using existing DB)
+   npm run prisma:pull
 
-Backend will run on `http://localhost:3001`
+   # Generate Prisma client
+   npm run prisma:gen
 
-3. **Setup Frontend**
-```bash
-cd frontend
+   # Run migrations
+   npm run prisma:migration
 
-# Install dependencies
-npm install
+   # Seed the database
+   npm run prisma:seeding
+   ```
 
-# Setup environment variables
-cp .env.local.example .env.local
-# Edit .env.local if needed
+5. Start the development server:
+   ```bash
+   npm run start:dev
+   ```
 
-# Start frontend server
-npm run dev
-```
+The API will be available at `http://localhost:3001` (or configured port).
+Swagger documentation at `http://localhost:3001/api`.
 
-Frontend will run on `http://localhost:3000`
+### Frontend Setup
 
-## 📁 Project Structure
+1. Navigate to the frontend directory:
 
-```
-hyperhire-test/
-├── backend/                    # NestJS Backend
-│   ├── prisma/                # Database schema & migrations
-│   │   ├── schema.prisma
-│   │   └── seed.ts
-│   ├── src/
-│   │   ├── application/       # Application layer (Services, DTOs)
-│   │   ├── domain/           # Domain layer (Entities, Interfaces)
-│   │   ├── infrastructure/   # Infrastructure (Database, Repositories)
-│   │   ├── modules/          # NestJS modules
-│   │   ├── presentation/     # Presentation layer (Controllers)
-│   │   ├── app.module.ts
-│   │   └── main.ts
-│   ├── test/                 # E2E tests
-│   └── package.json
-│
-├── frontend/                  # Next.js Frontend
-│   ├── src/
-│   │   ├── app/              # Next.js 14 App Router
-│   │   ├── components/       # Atomic Design components
-│   │   │   ├── atoms/
-│   │   │   ├── molecules/
-│   │   │   └── organisms/
-│   │   ├── store/           # Redux store
-│   │   ├── lib/             # Utilities & API client
-│   │   └── types/           # TypeScript types
-│   ├── public/              # Static assets
-│   └── package.json
-│
-└── README.md                 # This file
-```
+   ```bash
+   cd fe
+   ```
 
-## 🔌 API Endpoints
+2. Install dependencies:
 
-### Menus
-```
-GET    /api/menus              # Get all menus
-GET    /api/menus/tree         # Get menu tree structure
-GET    /api/menus/roots        # Get root menus
-GET    /api/menus/:id          # Get menu by ID
-GET    /api/menus/:id/children # Get children of a menu
-POST   /api/menus              # Create a new menu
-PUT    /api/menus/:id          # Update a menu
-DELETE /api/menus/:id          # Delete a menu
-```
+   ```bash
+   npm install
+   ```
 
-### Request/Response Examples
+3. Configure API endpoint:
 
-**Create Menu:**
-```json
-POST /api/menus
-{
-  "name": "System Management",
-  "parentId": "uuid-of-parent" // optional
-}
-```
+   - Update the API base URL in `src/service/api.ts` to point to your backend
 
-**Response:**
-```json
-{
-  "id": "uuid",
-  "name": "System Management",
-  "depth": 0,
-  "parentId": null,
-  "createdAt": "2024-01-01T00:00:00.000Z",
-  "updatedAt": "2024-01-01T00:00:00.000Z"
-}
-```
+4. Start the development server:
+   ```bash
+   npm run dev
+   ```
 
-## 🧪 Testing
+The application will be available at `http://localhost:3000`.
 
-### Backend Tests
-```bash
-cd backend
+## Available Scripts
 
-# Unit tests
-npm run test
+### Backend Scripts
 
-# E2E tests
-npm run test:e2e
+- `npm run start:dev` - Start development server with hot reload
+- `npm run build` - Build the application
+- `npm run test` - Run unit tests
+- `npm run test:e2e` - Run end-to-end tests
+- `npm run prisma:studio` - Open Prisma Studio for database management
+- `npm run lint` - Run ESLint
+- `npm run format` - Format code with Prettier
 
-# Test coverage
-npm run test:cov
-```
+### Frontend Scripts
 
-### Frontend Tests
-```bash
-cd frontend
+- `npm run dev` - Start development server
+- `npm run build` - Build the application for production
+- `npm run lint` - Run ESLint
+- `npm run format` - Format code with Prettier
 
-# Type checking
-npm run type-check
+## API Endpoints
 
-# Linting
-npm run lint
-```
+The backend provides the following main endpoints:
 
-## 🛠️ Tech Stack
+- `GET /menus` - Get all menus with pagination and filtering
+- `POST /menus` - Create a new menu item
+- `PUT /menus/:id` - Update a menu item
+- `DELETE /menus/:id` - Delete a menu item
 
-### Frontend
-- **Framework:** Next.js 14 (App Router)
-- **Language:** TypeScript
-- **Styling:** TailwindCSS
-- **State Management:** Redux Toolkit
-- **HTTP Client:** Axios
-- **Icons:** Lucide React
+For detailed API documentation, visit the Swagger UI at `/api` when the backend is running.
 
-### Backend
-- **Framework:** NestJS
-- **Language:** TypeScript
-- **Database:** PostgreSQL
-- **ORM:** Prisma
-- **Validation:** class-validator
-- **Testing:** Jest
+## Development Guidelines
 
-## 📱 Responsive Design
+### Code Quality
 
-The application is fully responsive across all devices:
+- ESLint and Prettier are configured for consistent code formatting
+- Husky pre-commit hooks ensure code quality
+- Commit messages follow conventional commits format
 
-- **Desktop (1024px+):** Full sidebar + split view
-- **Tablet (768px-1023px):** Collapsible sidebar
-- **Mobile (<768px):** Stack layout with drawer navigation
+### Database
 
-## 🎨 Design Patterns
+- Use Prisma migrations for schema changes
+- Run seeders for initial data setup
+- Use Prisma Studio for database inspection
 
-### Frontend
-- **Atomic Design:** Component organization
-- **Redux Toolkit:** State management with slices
-- **Custom Hooks:** Reusable logic
-- **Composition:** Component composition over inheritance
+### Testing
 
-### Backend
-- **Domain-Driven Design (DDD):** Clear separation of concerns
-- **Repository Pattern:** Data access abstraction
-- **Dependency Injection:** Loose coupling
-- **DTO Pattern:** Data transfer and validation
+- Unit tests with Jest
+- E2E tests for API endpoints
+- Frontend testing can be added with React Testing Library
 
-## 🔒 Security
+## Deployment
 
-- Input validation on all endpoints
-- SQL injection prevention via Prisma
-- CORS configuration
-- Environment variable protection
+### Vercel (Frontend)
 
-## 📈 Performance
+1. Connect your GitHub repository to Vercel
+2. In Vercel dashboard, configure the project settings:
+   - **Root Directory**: `fe/`
+   - **Build Command**: `npm run build`
+   - **Output Directory**: `.next` (automatic for Next.js)
+3. Set environment variables:
+   - `NEXT_PUBLIC_API_URL` - Your Railway backend URL (e.g., `https://your-app.up.railway.app`)
 
-- Code splitting with Next.js
-- Lazy loading components
-- Optimized database queries
-- Efficient state management
-- Tree shaking
+The `vercel.json` file in the root configures the build settings for the monorepo.
 
-## 🤝 Contributing
+### Railway (Backend)
+
+1. Connect your GitHub repository to Railway
+2. Railway will automatically detect the `railway.json` configuration and use the specified Dockerfile
+3. Add a PostgreSQL database service in Railway
+4. Set environment variables:
+   - `DATABASE_URL` - Railway's PostgreSQL connection string (auto-generated)
+   - `PORT` - `8080` (matches Dockerfile EXPOSE)
+
+### Docker
+
+Dockerfiles are provided for containerized deployment:
+
+- `be/Dockerfile` - Production backend image
+- `be/Dockerfile.dev` - Development backend image
+
+### Environment Variables
+
+**Backend:**
+
+- `DATABASE_URL` - PostgreSQL connection string
+- `PORT` - Server port (default: 3001, Railway: 8080)
+
+**Frontend:**
+
+- `NEXT_PUBLIC_API_URL` - Backend API URL
+
+## Contributing
 
 1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+2. Create a feature branch
+3. Make your changes
+4. Run tests and linting
+5. Submit a pull request
 
-## 📝 License
+## License
 
-This project is licensed under the MIT License.
-
-## 👥 Authors
-
-- **Kilo Code** - Full-stack development
-
-## 🙏 Acknowledgments
-
-- NestJS team for the amazing framework
-- Next.js team for the powerful React framework
-- Prisma team for the excellent ORM
-- TailwindCSS for the utility-first CSS framework
-
-## 📞 Support
-
-For support, please open an issue in the repository.
-
----
-
-**Built with ❤️ using modern web technologies**
+This project is licensed under the UNLICENSED license.
