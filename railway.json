@@ -1,13 +1,11 @@
 {
+  "$schema": "https://railway.com/railway.schema.json",
   "build": {
-    "builder": "DOCKER",
+    "builder": "DOCKERFILE",
     "dockerfilePath": "./be/Dockerfile"
-  },
+    },
   "deploy": {
-    "startCommand": "npm run start:prod",
-    "healthcheckPath": "/",
-    "healthcheckTimeout": 300,
-    "restartPolicyType": "ON_FAILURE",
-    "restartPolicyMaxRetries": 10
+    "preDeployCommand": ["npm run prisma:migration && npm run prisma:seeding"],
+    "startCommand": "npm run start:prod"
   }
 }

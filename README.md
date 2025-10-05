@@ -223,11 +223,14 @@ The `vercel.json` file in the root configures the build settings for the monorep
 ### Railway (Backend)
 
 1. Connect your GitHub repository to Railway
-2. Railway will automatically detect the `railway.json` configuration and use the specified Dockerfile
-3. Add a PostgreSQL database service in Railway
-4. Set environment variables:
+2. In Railway dashboard, set the **Root Directory** to `be/`
+3. Railway will automatically detect the Dockerfile in the `be/` directory
+4. Add a PostgreSQL database service in Railway
+5. Set environment variables:
    - `DATABASE_URL` - Railway's PostgreSQL connection string (auto-generated)
    - `PORT` - `8080` (matches Dockerfile EXPOSE)
+
+Alternatively, you can use the `railway.json` configuration file, but setting the root directory in the dashboard is more reliable for monorepos.
 
 ### Docker
 

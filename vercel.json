@@ -1,8 +1,8 @@
 {
-  "framework": null,
-  "buildCommand": "cd fe && npm run build",
-  "outputDirectory": "fe/out",
-  "installCommand": "cd fe && npm install",
-  "devCommand": "cd fe && npm run dev",
-  "rootDirectory": "fe"
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "nextjs",
+  "buildCommand": "npm run build",
+  "installCommand": "npm install --legacy-peer-deps",
+  "devCommand": "npm run dev",
+  "outputDirectory": ".next"
 }
