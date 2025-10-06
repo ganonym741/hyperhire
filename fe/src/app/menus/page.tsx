@@ -67,7 +67,7 @@ const MenusPage = () => {
   };
 
   return (
-    <div className="mx-16 space-y-6">
+    <div className="mx-3 md:mx-16 space-y-6">
       <Breadcrumb items={["Menus"]} />
 
       <div className="flex items-center gap-4 mb-6">
